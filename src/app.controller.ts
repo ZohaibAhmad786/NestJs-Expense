@@ -12,13 +12,17 @@ import {
 } from '@nestjs/common';
 import { AppService } from './app.service';
 import { ReportType } from './data';
-import { CreateReportDto, UpdateReportDto } from './dtos/report.dto';
+import {
+  CreateReportDto,
+  ReportResponseDto,
+  UpdateReportDto,
+} from './dtos/report.dto';
 // Controller are classes to create different endpoints
 @Controller('report/:type') // we can also add pre-path to api url
 export class AppController {
   constructor(private readonly appService: AppService) {}
   @Get()
-  getAllReports(@Param('type') type: string) {
+  getAllReports(@Param('type') type: string): ReportResponseDto[] {
     const reportType =
       type === 'income' ? ReportType.INCOME : ReportType.EXPENSE;
     return this.appService.getAllReports(reportType);
@@ -28,7 +32,7 @@ export class AppController {
   getReportById(
     @Param('type', new ParseEnumPipe(ReportType)) type: string,
     @Param('id', ParseUUIDPipe) id: string, // Pipe convert to actual Pipe type if we pass something else it throw an error
-  ) {
+  ): ReportResponseDto {
     const reportType =
       type === 'income' ? ReportType.INCOME : ReportType.EXPENSE;
     return this.appService.getReportById(reportType, id);
@@ -38,7 +42,7 @@ export class AppController {
   createReport(
     @Body() { amount, source }: CreateReportDto,
     @Param('type', new ParseEnumPipe(ReportType)) type: string,
-  ) {
+  ): ReportResponseDto {
     const reportType =
       type === 'income' ? ReportType.INCOME : ReportType.EXPENSE;
     return this.appService.createReport({ amount, source }, reportType);
@@ -49,7 +53,7 @@ export class AppController {
     @Param('id', ParseUUIDPipe) id: string,
     @Param('type', new ParseEnumPipe(ReportType)) type: string,
     @Body() body: UpdateReportDto,
-  ) {
+  ): ReportResponseDto {
     const reportType =
       type === 'income' ? ReportType.INCOME : ReportType.EXPENSE;
 
