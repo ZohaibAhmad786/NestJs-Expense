@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ReportType, data } from './data';
 import { v4 as uuid } from 'uuid';
+import { ReportResponseDto } from './dtos/report.dto';
 interface Report {
   amount: number;
   source: string;
@@ -8,16 +9,23 @@ interface Report {
 interface UpdateReport extends Partial<Report> {}
 @Injectable() // this is necessary to this class somewhere else n controller
 export class AppService {
-  getAllReports(type: ReportType) {
-    return data.report.filter((report) => report.type === type);
-  }
-  getReportById(type: ReportType, id: string) {
+  getAllReports(type: ReportType): ReportResponseDto[] {
     return data.report
       .filter((report) => report.type === type)
+      .map((report) => new ReportResponseDto(report));
+  }
+  getReportById(type: ReportType, id: string): ReportResponseDto {
+    const report = data.report
+      .filter((report) => report.type === type)
       .find((report) => report.id === id);
+    if (!report) return;
+    return new ReportResponseDto(report);
   }
 
-  createReport({ amount, source }: Report, type: ReportType) {
+  createReport(
+    { amount, source }: Report,
+    type: ReportType,
+  ): ReportResponseDto {
     const newReport = {
       id: uuid(),
       source,
@@ -27,9 +35,13 @@ export class AppService {
       type,
     };
     data.report.push(newReport);
-    return newReport;
+    return new ReportResponseDto(newReport);
   }
-  updateReportById(id: string, type: ReportType, body: UpdateReport) {
+  updateReportById(
+    id: string,
+    type: ReportType,
+    body: UpdateReport,
+  ): ReportResponseDto {
     const reportToUpdate = data.report
       .filter((report) => report.type === type)
       .find((report) => report.id === id);
@@ -45,7 +57,7 @@ export class AppService {
       updated_at: new Date(),
     };
 
-    return data.report[reportIndex];
+    return new ReportResponseDto(data.report[reportIndex]);
   }
 
   deleteReportById(id: string, type: ReportType) {
